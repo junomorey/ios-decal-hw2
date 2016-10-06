@@ -21,8 +21,11 @@ class ViewController: UIViewController {
     
     // TODO: This looks like a good place to add some data structures.
     //       One data structure is initialized below for reference.
-    var someDataStructure: [String] = [""]
-    
+    var pressedList: [String] = []
+    var inputs: [Int] = []
+    var operatorActive = false
+    var operatorsList: [String] = []
+    var negate = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,7 +38,6 @@ class ViewController: UIViewController {
         //            We will be using the result label to run autograded tests.
         resultLabel.accessibilityValue = "resultLabel"
         makeButtons()
-        // Do any additional setup here.
     }
     
     override func didReceiveMemoryWarning() {
@@ -43,18 +45,53 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
+    // Converts pressedList to an Int
+    func DigitsToNumber(_ digits: [String]) -> Int {
+        if digits.count == 0 {
+            return 0
+        } else if negate {
+            return -1 * Int(digits.joined())!
+        } else {
+            return Int(digits.joined())!
+        }
+    }
+    
     // TODO: A method to update your data structure(s) would be nice.
     //       Modify this one or create your own.
-    func updateSomeDataStructure(_ content: String) {
-        print("Update me like one of those PCs")
+    func updatePressedList(_ content: String) {
+        if (content == "") {
+            pressedList = []
+        } else if (pressedList.count < 7) {
+            pressedList.append(content)
+        }
     }
+    
+    // Sets the pressedList to 0
+    func clear() {
+        pressedList = []
+        resultLabel.text = "0"
+        inputs = []
+        operatorActive = false
+        operatorsList = []
+        negate = false
+    }
+    
+    // Displays result of intCalculation
+    func displayIntResult(_ result: Int) {
+        resultLabel.text = String(result)
+    }
+    
+    // Displays result of Calculation
+    func displayDoubleResult(_ result: Double) {
+        resultLabel.text = String(result)
+    }
+    
     
     // TODO: Ensure that resultLabel gets updated.
     //       Modify this one or create your own.
-    func updateResultLabel(_ content: String) {
-        print("Update me like one of those PCs")
+    func updateResultLabel() {
+        resultLabel.text = String(DigitsToNumber(pressedList))
     }
-    
     
     // TODO: A calculate method with no parameters, scary!
     //       Modify this one or create your own.
@@ -64,9 +101,26 @@ class ViewController: UIViewController {
     
     // TODO: A simple calculate method for integers.
     //       Modify this one or create your own.
-    func intCalculate(a: Int, b:Int, operation: String) -> Int {
+    func intCalculate(operation: String) -> Int {
+        if (inputs.count == 0) {
+            return 0
+        } else if (inputs.count == 1) {
+            return inputs[0]
+        }
+        let a = inputs[0]
+        let b = inputs[1]
         print("Calculation requested for \(a) \(operation) \(b)")
-        return 0
+        if (operation == "/") {
+            return a / b
+        } else if (operation == "*") {
+            return a * b
+        } else if (operation == "-") {
+            return a - b
+        } else if (operation == "+") {
+            return a + b
+        } else {
+            return 0
+        }
     }
     
     // TODO: A general calculate method for doubles
@@ -80,17 +134,41 @@ class ViewController: UIViewController {
     func numberPressed(_ sender: CustomButton) {
         guard Int(sender.content) != nil else { return }
         print("The number \(sender.content) was pressed")
-        // Fill me in!
+        if (operatorActive) {
+            updatePressedList("")
+            updateResultLabel()
+        }
+        updatePressedList(sender.content)
+        updateResultLabel()
+        operatorActive = false
     }
     
     // REQUIRED: The responder to an operator button being pressed.
     func operatorPressed(_ sender: CustomButton) {
-        // Fill me in!
+        inputs.append(DigitsToNumber(pressedList))
+        if (sender.content == "C") {
+            clear()
+        } else if (sender.content == "+/-") {
+            if negate {
+                negate = false
+            } else {
+                negate = true
+            }
+        } else if (sender.content == "=") {
+            let result = intCalculate(operation: operatorsList[0])
+            displayIntResult(result)
+            return
+        } else {
+            negate = false
+            operatorsList.append(sender.content)
+        }
+        updateResultLabel()
+        operatorActive = true
     }
     
     // REQUIRED: The responder to a number or operator button being pressed.
     func buttonPressed(_ sender: CustomButton) {
-       // Fill me in!
+        operatorActive = false
     }
     
     // IMPORTANT: Do NOT change any of the code below.
